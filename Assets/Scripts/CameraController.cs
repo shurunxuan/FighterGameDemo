@@ -21,6 +21,7 @@ public class CameraController : MonoBehaviour
     private int _enemyCount;
     private RawImage[] _enemyIndicators;
     private Texture2D[] _indicatorTextures;
+	private Vector3 _shouldBePosition;
 
     public Text Text;
 
@@ -28,6 +29,7 @@ public class CameraController : MonoBehaviour
     void Start()
     {
         _offset = transform.position - AttachedTo.transform.position;
+		_shouldBePosition = transform.position;
         _planeRigidbody = AttachedTo.GetComponent<Rigidbody>();
 
         _enemyCount = Enemies.transform.childCount;
@@ -85,13 +87,15 @@ public class CameraController : MonoBehaviour
             EnemyIndicator.enabled = false;
         }
 
-        float planeSpeed = _planeRigidbody.velocity.magnitude;
+		float planeSpeed = AttachedTo.GetComponent<Rigidbody>().velocity.magnitude;
         Vector3 targetCameraPosition = AttachedTo.transform.position + transform.localToWorldMatrix.MultiplyVector(_offset);
         Quaternion targetCameraRotation = AttachedTo.transform.rotation;
         float positionSmothing = DefaultSmothing + Mathf.Sqrt(planeSpeed) * SpeedFactor * PositionFactor;
         float rotationSmothing = DefaultSmothing + Mathf.Sqrt(planeSpeed + 1) * SpeedFactor * RotationFactor;
-        transform.position = Vector3.Lerp(transform.position, targetCameraPosition, positionSmothing * Time.deltaTime);
+        _shouldBePosition = Vector3.Lerp(_shouldBePosition, targetCameraPosition, positionSmothing * Time.deltaTime);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetCameraRotation, rotationSmothing * 2.0f * Time.deltaTime);
+		transform.position = _shouldBePosition + Random.insideUnitSphere * AttachedTo.GetComponent<Rigidbody>().velocity.magnitude / 200.0f;
+		Text.text = "" + AttachedTo.GetComponent<Rigidbody>().velocity.magnitude;
 
         Vector3[] enemyScreenPosition = new Vector3[_enemyCount];
 

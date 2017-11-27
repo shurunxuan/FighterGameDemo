@@ -170,7 +170,6 @@ public class ShootController : MonoBehaviour
                     _currentTarget.GetComponent<NpcController>().lockedOn = true;
                 }
 
-                Text.text = distance + " " + 10000.0f / Mathf.Sqrt(worldDistance);
             }
             else // Enemy is out of screen
             {
