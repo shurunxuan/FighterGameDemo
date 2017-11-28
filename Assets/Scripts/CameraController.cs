@@ -102,7 +102,7 @@ public class CameraController : MonoBehaviour
         for (int i = 0; i < _enemyCount; ++i)
         {
             enemyScreenPosition[i] = Camera.main.WorldToScreenPoint(Enemies.transform.GetChild(i).transform.position);
-            if (enemyScreenPosition[i][2] < 0 || enemyScreenPosition[i][2] > 1000)
+            if (enemyScreenPosition[i][2] < 0 || (Enemies.transform.GetChild(i).transform.position - AttachedTo.transform.position).magnitude > 400)
             {
                 _enemyIndicators[i].rectTransform.localScale = Vector3.zero;
                 continue;
@@ -172,7 +172,7 @@ public class CameraController : MonoBehaviour
                 _enemyIndicators[i].rectTransform.eulerAngles = Vector3.zero;
 
                 // Set scale
-                float scale = Mathf.Max(40f / enemyScreenPosition[i][2], 0.5f) * 2;
+                float scale = Mathf.Max(40f / enemyScreenPosition[i][2], 0.5f) * 2  * Screen.dpi / 96.0f;
                 _enemyIndicators[i].rectTransform.localScale = scale * Vector3.one;
 
             }

@@ -26,6 +26,7 @@ public class ShootController : MonoBehaviour
     private bool _lockedOn = false;
 
     private int _missileCount = 0;
+    private Vector3 _aimingDirection;
 
     // Use this for initialization
     void Start()
@@ -45,7 +46,7 @@ public class ShootController : MonoBehaviour
         for (int i = 0; i < Enemies.transform.childCount; ++i)
         {
             if (Enemies.transform.GetChild(i).GetComponent<NpcController>().inScreen)
-                if ((Enemies.transform.GetChild(i).transform.position - Plane.transform.position).magnitude < 800.0f)
+                if ((Enemies.transform.GetChild(i).transform.position - Plane.transform.position).magnitude < 400.0f)
                 {
                     inScreenEnemies.Add(Enemies.transform.GetChild(i).gameObject);
                 }
@@ -53,7 +54,7 @@ public class ShootController : MonoBehaviour
 
         if (_targetAcquired) // Already had a target, which means _currentTarget is valid
         {
-            if ((_currentTarget.transform.position - Plane.transform.position).magnitude < 800.0f)
+            if ((_currentTarget.transform.position - Plane.transform.position).magnitude < 400.0f)
             {
                 // Current target is in a valid range
                 // Do nothing
@@ -81,9 +82,10 @@ public class ShootController : MonoBehaviour
                 _currentTarget.GetComponent<NpcController>().targeted = true;
                 _targetAcquired = true;
                 // Reset the locker
-                rectTransform.position = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f);
+                //rectTransform.position = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f);
+                _aimingDirection = Plane.transform.localToWorldMatrix.MultiplyVector(Vector3.forward);
                 // Show the locker
-                rectTransform.localScale = Vector3.one;
+                rectTransform.localScale = Vector3.one * Screen.dpi / 96.0f;
                 _lockedOn = false;
             }
             else
@@ -116,9 +118,10 @@ public class ShootController : MonoBehaviour
                     _currentTarget = (GameObject)inScreenEnemies[_targetIndex];
                     _currentTarget.GetComponent<NpcController>().targeted = true;
                     // Reset the locker
-                    rectTransform.position = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f);
+                    //rectTransform.position = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f);
+                    _aimingDirection = Plane.transform.localToWorldMatrix.MultiplyVector(Vector3.forward);
                     // Show the locker
-                    rectTransform.localScale = Vector3.one;
+                    rectTransform.localScale = Vector3.one * Screen.dpi / 96.0f;
                     _lockedOn = false;
                 }
                 else
@@ -142,9 +145,10 @@ public class ShootController : MonoBehaviour
             if (_currentTarget.GetComponent<NpcController>().inScreen && !_aiming) // Enemy is in screen but not aiming
             {
                 // Show the locker
-                rectTransform.localScale = Vector3.one;
+                rectTransform.localScale = Vector3.one * Screen.dpi / 96.0f;
                 // Reset the locker
-                rectTransform.position = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f);
+                //rectTransform.position = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f);
+                _aimingDirection = Plane.transform.localToWorldMatrix.MultiplyVector(Vector3.forward);
                 // Start aiming
                 _aiming = true;
             }
@@ -156,9 +160,32 @@ public class ShootController : MonoBehaviour
                     .magnitude;
                 float worldDistance = (Plane.transform.position - _currentTarget.transform.position).magnitude;
 
-                rectTransform.position =
-                      Vector3.Lerp(rectTransform.position, targetScreenPosition,
-                          1f * Time.deltaTime);
+                // rectTransform.position =
+                //       Vector3.Lerp(rectTransform.position, targetScreenPosition,
+                //           1f * Time.deltaTime);
+
+                Vector3 targetToPlane = (_currentTarget.transform.position - Plane.transform.position).normalized;
+                _aimingDirection = Vector3.Lerp(_aimingDirection, targetToPlane, 2.8f * Time.deltaTime);
+                _aimingDirection = Vector3.Lerp(_aimingDirection, Plane.transform.localToWorldMatrix.MultiplyVector(Vector3.forward), 1.2f * Time.deltaTime);
+                Vector3 lockerWorldPosition = _aimingDirection * 1500.0f + Plane.transform.position;
+                Vector3 lockerScreenPosition = Camera.main.WorldToScreenPoint(lockerWorldPosition);
+                lockerScreenPosition.Set(lockerScreenPosition.x, lockerScreenPosition.y, 0);
+                rectTransform.position = lockerScreenPosition;
+
+                // float horizontalAxis = Input.GetAxis("Horizontal");
+                // float verticalAxis = Input.GetAxis("Vertical");
+                // rectTransform.position += new Vector3(0, verticalAxis, 0) * 10;
+
+                // float x = rectTransform.position.x - Screen.width / 2;
+                // float y = rectTransform.position.y - Screen.height / 2;
+                // float r = Mathf.Sqrt(x * x + y * y);
+                // float sin = y / r;
+                // float angle = Mathf.Asin(sin);
+                // angle = angle + horizontalAxis * 0.1f;
+                // sin = Mathf.Sin(angle);
+                // y = sin * r;
+                // x = Mathf.Sqrt(r * r - y * y);
+                // rectTransform.position = new Vector3(x + Screen.width / 2, y + Screen.height / 2, 0);
 
                 if (!_lockedOn && distance < 20.0f) // Not locked on but in locking range
                 {
@@ -209,8 +236,7 @@ public class ShootController : MonoBehaviour
             else if (!_lockedOn)
             {
                 // Aiming, but not locked on
-                newMissile.SendMessage("Positioning",
-                    new Vector3(rectTransform.position.x, rectTransform.position.y, Screen.height) / Screen.height);
+                newMissile.SendMessage("Positioning", _aimingDirection);
             }
             else
             {
