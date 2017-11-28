@@ -59,7 +59,6 @@ public class NpcController : MonoBehaviour
     private int _missileCount = 0;
 
     private float _targetingTimer = 0;
-    private float _targetTimeOut = 0;
     private float _beingTargetedTimer = 0;
     public enum NpcState
     {
@@ -123,8 +122,6 @@ public class NpcController : MonoBehaviour
         // State Machine
         if (State == NpcState.FindingTarget)
         {
-            _targetTimeOut = 0;
-
             if (tag == "EnemyContainer")
             {
                 GameObject player = GameObject.FindGameObjectWithTag("PlayerContainer");
@@ -167,11 +164,6 @@ public class NpcController : MonoBehaviour
         }
         else if (State == NpcState.FollowingTarget)
         {
-            _targetTimeOut += Time.deltaTime;
-            if (_targetTimeOut >= 30)
-            {
-                State = NpcState.FindingTarget;
-            }
 
             if (Targeting != null)
             {
