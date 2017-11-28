@@ -8,7 +8,6 @@ public class ShootController : MonoBehaviour
 {
 
     public GameObject Plane;
-    public Text Text;
     public GameObject TargetArrow;
     public GameObject Missile;
     public GameObject Enemies;

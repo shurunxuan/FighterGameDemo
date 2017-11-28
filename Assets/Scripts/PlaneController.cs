@@ -13,7 +13,6 @@ public class PlaneController : MonoBehaviour
     private Transform ForcePointFrontTransform;
     private Transform ForcePointBackTransform;
 
-    public Text text;
     public float rollFactor;
     public float pitchFactor;
     public float speedFactor;

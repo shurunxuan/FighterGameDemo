@@ -23,8 +23,6 @@ public class CameraController : MonoBehaviour
     private Texture2D[] _indicatorTextures;
 	private Vector3 _shouldBePosition;
 
-    public Text Text;
-
     // Use this for initialization
     void Start()
     {
@@ -95,7 +93,6 @@ public class CameraController : MonoBehaviour
         _shouldBePosition = Vector3.Lerp(_shouldBePosition, targetCameraPosition, positionSmothing * Time.deltaTime);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetCameraRotation, rotationSmothing * 2.0f * Time.deltaTime);
 		transform.position = _shouldBePosition + Random.insideUnitSphere * AttachedTo.GetComponent<Rigidbody>().velocity.magnitude / 200.0f;
-		Text.text = "" + AttachedTo.GetComponent<Rigidbody>().velocity.magnitude;
 
         Vector3[] enemyScreenPosition = new Vector3[_enemyCount];
 
